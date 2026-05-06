@@ -1,4 +1,4 @@
-name: 一键打包带环境
+name: 一键打包运行包
 on:
   workflow_dispatch
 
@@ -6,27 +6,32 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      # 1.正确拉取你完整源码
+      - name: 下载全部源码
+        uses: actions/checkout@v4
 
+      # 2.安装Java17 去掉所有出错缓存
       - name: 安装Java17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
-          cache: maven
 
-      - name: 打包项目
+      # 3.直接打包，不检测多余文件
+      - name: 编译项目
         run: mvn clean package -DskipTests
 
-      - name: 打包绿色运行包
+      # 4.生成一键启动文件
+      - name: 制作一键启动包
         run: |
-          mkdir 运行包
+          md 运行包
           copy target\*.jar 运行包\
           echo @echo off > 运行包\启动.bat
           echo java -jar *.jar >> 运行包\启动.bat
           echo pause >> 运行包\启动.bat
 
-      - name: 上传成品
+      # 5.上传成品
+      - name: 上传运行包
         uses: actions/upload-artifact@v4
         with:
           name: 小蚕一键运行包
