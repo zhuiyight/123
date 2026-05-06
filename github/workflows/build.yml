@@ -1,0 +1,29 @@
+name: Build Windows Executable and Frontend
+on: [push]
+jobs:
+build:
+runs-on: windows-latest
+steps:
+- uses: actions/checkout@v4
+- name: Set up Go
+uses: actions/setup-go@v5
+with: { go-version: '1.22' }
+- name: Build Backend
+run: |
+cd xiaochan
+go build -o xiaochan.exe
+- name: Set up Node.js
+uses: actions/setup-node@v4
+with: { node-version: '20' }
+- name: Build Frontend
+run: |
+cd xiaocan-front
+npm install
+npm run build
+- name: Upload Artifacts
+uses: actions/upload-artifact@v4
+with:
+name: windows-build
+path: |
+xiaochan/xiaochan.exe
+xiaocan-front/dist/
