@@ -1,59 +1,60 @@
-name: 一键拉取+构建前后端
+name: 一键构建前后端
+# 关键：标准触发配置，解决流程图不显示
 on:
-  workflow_dispatch: push
+  # 网页手动运行
+  workflow_dispatch:
+  # 推送代码自动运行
+  push:
+    branches: [ main, master ]
 
 jobs:
-  build:
+  build-all:
     runs-on: windows-latest
     steps:
-      # 1. 新建工作目录
-      - name: 创建文件夹
-        run: |
-          mkdir xiaochan
-          mkdir front
-
-      # 2. 克隆【后端仓库】把下面链接换成你的后端github地址
-      - name: 拉取Go后端源码
+      # 克隆后端仓库【改成你的后端仓库地址】
+      - name: 下载后端源码
         uses: actions/checkout@v4
         with:
           repository: zhuiyight/xiaochan
-          path: xiaochan
+          path: ./backend
 
-      # 3. 编译后端Windows exe
-      - name: 安装Go
+      # 编译Go后端
+      - name: 安装Go环境
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
-      - name: 编译后端
+          go-version: 1.23
+      
+      - name: 编译Windows程序
         run: |
-          cd xiaochan
+          cd ./backend
           go mod tidy
           go build -ldflags "-s -w" -o xiaochan.exe
 
-      # 4. 克隆【前端仓库】换成你的前端github地址
-      - name: 拉取前端源码
+      # 克隆前端仓库【改成你的前端仓库地址】
+      - name: 下载前端源码
         uses: actions/checkout@v4
         with:
           repository: zhuiyight/xiaocan-front
-          path: front
+          path: ./frontend
 
-      # 5. 打包前端dist
-      - name: 安装Node
+      # 打包前端
+      - name: 安装Node环境
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-      - name: 打包前端
+      
+      - name: 构建前端静态文件
         run: |
-          cd front
+          cd ./frontend
           npm install
           npm run build
 
-      # 6. 上传全部成品
-      - name: 上传运行包
+      # 上传成品，下载直接在电脑运行
+      - name: 打包上传成品
         uses: actions/upload-artifact@v4
         with:
-          name: Windows全套运行文件
+          name: Windows-全套运行包
           path: |
-            xiaochan/xiaochan.exe
-            front/dist/
+            backend/xiaochan.exe
+            frontend/dist/
